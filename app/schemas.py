@@ -13,6 +13,18 @@ class Post(BaseModel):
 #     content: str
 #     published: bool = True
 
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserOut(BaseModel):
+    id: int
+    email: EmailStr
+    created_at: datetime
 # class UpdatePost(BaseModel):
 #     title: str
 #     content: str
@@ -30,6 +42,7 @@ class Postres(PostBase):
     id: int
     created_at: datetime
     owner_id: int
+    owner: UserOut
 
     # class Config:
     #     orm_mode=True
@@ -37,18 +50,6 @@ class Postres(PostBase):
 class PostUpdate(PostBase):
     pass
 
-class UserCreate(BaseModel):
-    email: EmailStr
-    password: str
-
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
-
-class UserOut(BaseModel):
-    id: int
-    email: EmailStr
-    created_at: datetime
 
 class Token(BaseModel):
     accessToken: str
