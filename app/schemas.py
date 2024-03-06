@@ -5,6 +5,7 @@ class Post(BaseModel):
     title: str
     content: str
     published: bool = True
+    owner_id: int
     # rating: Optional[int] = None
 
 # class CreatePost(BaseModel):
@@ -28,6 +29,7 @@ class PostCreate(PostBase):
 class Postres(PostBase):
     id: int
     created_at: datetime
+    owner_id: int
 
     # class Config:
     #     orm_mode=True
@@ -53,4 +55,4 @@ class Token(BaseModel):
     tokenType: str
 
 class TokenData(BaseModel):
-    id: Optional[str]= None
+    id: Optional[int]= None

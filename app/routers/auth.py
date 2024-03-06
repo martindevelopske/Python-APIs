@@ -6,18 +6,18 @@ from ..utils import verify_password
 
 router= APIRouter(tags=["authentication"])
 
-@router.post("/login")
+@router.post("/login", response_model=schemas.Token)
 async def login(user_creds: OAuth2PasswordRequestForm= Depends(), db: Session= Depends(database.get_db)):
     user = db.query(models.User).filter(models.User.email == user_creds.username).first()
     # print(user)
 
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Invalid Credentials")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Invalid Credentials")
     
     verify= verify_password(user_creds.password, user.password)
 
     if not verify:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Invalid Credentials")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Invalid Credentials")
     
     #create and return jwt token
     accessToken= oauth2.createAccessToken(data={"userId": user.id})

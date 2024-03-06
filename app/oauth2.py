@@ -1,17 +1,20 @@
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
-from . import schemas
-
+from . import schemas, models, database
+from fastapi import Depends, status, HTTPException
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
 
 
 SECRET_KEY="justarandomlongstring"
 ALG="HS256"
-EXP=30  #mins
+EXP=60  #mins
 
+oauth2_scheme= OAuth2PasswordBearer(tokenUrl="login")
 
 def createAccessToken(data: dict):
     to_encode= data.copy()
-    expire= datetime.now() + timedelta(minutes=EXP)
+    expire= datetime.utcnow() + timedelta(minutes=EXP)
     to_encode.update({"exp": expire})
 
     encoded_token=jwt.encode(to_encode, SECRET_KEY, algorithm=ALG)
@@ -21,16 +24,20 @@ def createAccessToken(data: dict):
 def verifyAccessToken(token: str, credentialsException):
 
     try:
-
-        payload=jwt.decode(token, SECRET_KEY, algorithms=ALG)
+        payload=jwt.decode(token, SECRET_KEY, algorithms=[ALG])
         id= payload.get("userId")
         if not id:
             raise credentialsException
         
         tokenData=schemas.TokenData(id=id)
-
+        return tokenData
     except JWTError:
         raise credentialsException
     
-def getCurrentUser:
+def getCurrentUser(token: str= Depends(oauth2_scheme), db: Session= Depends(database.get_db)):
+    credentialsException= HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="could not validate credentials", headers={"WWW-Authenticate": "Bearer"})
+
+    token = verifyAccessToken(token, credentialsException)
+    user= db.query(models.User).filter(models.User.id == token.id).first()
+    return user
     
