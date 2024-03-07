@@ -1,11 +1,29 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
+from pydantic.types import conint
 from datetime import datetime
 from typing import Optional
+
+
+
+class UserOut(BaseModel):
+    id: int
+    email: EmailStr
+    created_at: datetime
+
+    class Config: 
+        orm_mode=True
+
+
 class Post(BaseModel):
     title: str
     content: str
-    published: bool = True
+    created_at: datetime
+    id: int
+    published: bool
     owner_id: int
+   
+    class Config:
+        orm_mode= True
     # rating: Optional[int] = None
 
 # class CreatePost(BaseModel):
@@ -21,10 +39,6 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
-class UserOut(BaseModel):
-    id: int
-    email: EmailStr
-    created_at: datetime
 # class UpdatePost(BaseModel):
 #     title: str
 #     content: str
@@ -44,6 +58,7 @@ class Postres(PostBase):
     owner_id: int
     owner: UserOut
 
+
     # class Config:
     #     orm_mode=True
 
@@ -57,3 +72,14 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: Optional[int]= None
+
+class Like(BaseModel):
+    post_id: int
+    dir: int= Field(..., ge=0, le=1)
+
+class JoinedPostRes(Post):
+    post: Post
+    likes: int
+
+    class Config:
+        orm_mode= True

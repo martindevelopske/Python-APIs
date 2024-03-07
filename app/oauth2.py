@@ -4,11 +4,12 @@ from . import schemas, models, database
 from fastapi import Depends, status, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+from .config import settings
 
 
-SECRET_KEY="justarandomlongstring"
-ALG="HS256"
-EXP=60  #mins
+SECRET_KEY=settings.secret_key
+ALG=settings.alg
+EXP=settings.exp  #mins
 
 oauth2_scheme= OAuth2PasswordBearer(tokenUrl="login")
 

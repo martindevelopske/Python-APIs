@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
 from fastapi.params import Body
-from typing import List, Optional
+from typing import List, Optional,Tuple
 import os
 from ..database import engine, get_db
 from sqlalchemy.orm import Session
@@ -8,21 +8,30 @@ from .. import models
 from .. import schemas
 from passlib.context import CryptContext
 from .. import oauth2
+from sqlalchemy import func
 
-
+# response_model=List[schemas.JoinedPostRes]
 router=APIRouter(prefix="/posts", tags=["posts"])
-@router.get("/", response_model=List[schemas.Postres])
+@router.get("/")
 async def get_posts(db:Session= Depends(get_db), limit:int = 10, skip:int=0, search: Optional[str]=""):
-    print(limit)
     # posts= db.query(models.Post).filter(models.Post.owner_id == currentUser.id)
-    posts= db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
-    return posts
+    # posts= db.query(
+    #         models.Post, func.count(models.Like.post_id).label("likes")).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    joined= db.query(models.Post, func.count(models.Like.post_id).label("likes")).join(models.Like, models.Like.post_id == models.Post.id).group_by(models.Post.id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+      # Convert the query result into a list of dictionaries
+    joined = [{'Post': post, 'likes': likes} for post, likes in joined]
+    
+    return joined
 
-@router.get("/{id}", response_model=schemas.Postres)
+@router.get("/{id}")
 async def get_posts(id: int, res: Response, db:Session= Depends(get_db), currentUser: int=Depends(oauth2.getCurrentUser)):
-    post= db.query(models.Post).filter(models.Post.id==id).first()
+    # post= db.query(models.Post).filter(models.Post.id==id).first()
+    joined_query= db.query(models.Post, func.count(models.Like.post_id).label("likes")).join(models.Like, models.Like.post_id == models.Post.id).filter(models.Post.id== id).group_by(models.Post.id)
+    post, likes= joined_query.first()
     if post: 
-        return  post
+       print(joined_query.first())
+       return {"post": post, "likes":likes}
+        # return {"post": post, "likes": likes}
     # res.status_code=status.HTTP_404_NOT_FOUND
     # return {"post": "post not found"}
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="post with that ID does not exist")
