@@ -17,16 +17,22 @@ async def get_posts(db:Session= Depends(get_db), limit:int = 10, skip:int=0, sea
     # posts= db.query(models.Post).filter(models.Post.owner_id == currentUser.id)
     # posts= db.query(
     #         models.Post, func.count(models.Like.post_id).label("likes")).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
-    joined= db.query(models.Post, func.count(models.Like.post_id).label("likes")).join(models.Like, models.Like.post_id == models.Post.id).group_by(models.Post.id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    joined_query= db.query(models.Post, func.count(models.Like.post_id).label("likes"))\
+    .outerjoin(models.Like, models.Like.post_id == models.Post.id)\
+    .group_by(models.Post.id).filter(models.Post.title.contains(search)).limit(limit).offset(skip)
+    print(joined_query)
+    posts=joined_query.all()
+    # if not joined:
+    #    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="no posts found")
       # Convert the query result into a list of dictionaries
-    joined = [{'Post': post, 'likes': likes} for post, likes in joined]
+    joined = [{'Post': post, 'likes': likes} for post, likes in posts]
     
     return joined
 
 @router.get("/{id}")
 async def get_posts(id: int, res: Response, db:Session= Depends(get_db), currentUser: int=Depends(oauth2.getCurrentUser)):
     # post= db.query(models.Post).filter(models.Post.id==id).first()
-    joined_query= db.query(models.Post, func.count(models.Like.post_id).label("likes")).join(models.Like, models.Like.post_id == models.Post.id).filter(models.Post.id== id).group_by(models.Post.id)
+    joined_query= db.query(models.Post, func.count(models.Like.post_id).label("likes")).outerjoin(models.Like, models.Like.post_id == models.Post.id).filter(models.Post.id== id).group_by(models.Post.id)
     post, likes= joined_query.first()
     if post: 
        print(joined_query.first())
