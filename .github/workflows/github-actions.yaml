@@ -6,6 +6,16 @@ on:
 jobs:
   job1:
     runs-on: ubuntu-latest
+    env:
+      db_user: martin
+      db_password: qTKO0uG0oB6y0WK90AVJyq6yyDz5VFPz
+      db_host: dpg-cnlf7j0l5elc73dqd92g-a.oregon-postgres.render.com
+      db_port: 5432
+      db_name: fastapi_project_wa96
+      secret_key: "justarandomlongstring"
+      alg: "HS256"
+      exp: 300
+
     steps:
       - name: pulling git repo
         uses: actions/checkout@v4
