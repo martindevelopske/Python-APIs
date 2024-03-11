@@ -6,13 +6,15 @@ on:
 jobs:
   job1:
     runs-on: ubuntu-latest
+    environment:
+      name: testing
     env:
-      db_user: martin
-      db_password: qTKO0uG0oB6y0WK90AVJyq6yyDz5VFPz
-      db_host: dpg-cnlf7j0l5elc73dqd92g-a.oregon-postgres.render.com
-      db_port: 5432
-      db_name: fastapi_project_wa96
-      secret_key: "justarandomlongstring"
+      db_user: ${{ secrets.DB_USER }}
+      db_password: ${{ secrets.DB_PASSWORD }}
+      db_host: ${{ secrets.DB_HOST }}
+      db_port: ${{ secrets.DB_PORT }}
+      db_name: ${{ secrets.DB_NAME }}
+      secret_key: ${{ secrets.SECRET_KEY }}
       alg: "HS256"
       exp: 300
 
